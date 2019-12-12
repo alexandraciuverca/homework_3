@@ -4,8 +4,8 @@ const Sequelize = require('sequelize')
 
 const mysql = require('mysql2/promise')
 
-const DB_USERNAME = 'root'
-const DB_PASSWORD = 'welcome12#'
+const DB_USERNAME = 'alexandra'
+const DB_PASSWORD = 'alexandra'
 
 let conn
 
@@ -45,6 +45,7 @@ app.get('/create', async (req, res) => {
     try{
         await sequelize.sync({force : true})
         for (let i = 0; i < 10; i++){
+            
             let student = new Student({
                 name : 'name ' + i,
                 address : 'some address on ' + i + 'th street',
@@ -73,8 +74,30 @@ app.get('/students', async (req, res) => {
 
 app.post('/students', async (req, res) => {
     try{
-        // TODO
-    }
+            
+		   if(req.body &&(req.body.age!=null || req.body.name!=null || req.body.address!=null)){
+		        
+		        if( req.body.address==null || req.body.age==null || req.body.name==null){
+                    res.status(400).json({message:"malformed request"});
+		            return;
+		        }
+                    
+                else if(req.body.age < 0){
+                    res.status(400).json({message:"age should be a positive number"})
+                    return;
+                }
+                    
+               else{
+                    await Student.bulkCreate(Student.findAll())
+		            let student= await Student.create(req.body)
+                    res.status(201).json({message : 'created'})}
+                
+              }
+            else{
+                  res.status(400).json({message: 'body is missing'});
+             }
+        }
+        
     catch(err){
         console.warn(err.stack)
         res.status(500).json({message : 'server error'})        
